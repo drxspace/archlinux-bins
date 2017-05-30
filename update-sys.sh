@@ -13,7 +13,7 @@
 [[ $EUID -ne 0 ]] && exec $(which sudo) "$0" "$1";
 
 [[ "$1" = "-m" ]] || [[ "$1" = "" ]] || [[ "$1" = "-a" ]] && {
-	mkinitcpio -p linux;
+	mkinitcpio -n -p linux;
 	echo;
 }
 

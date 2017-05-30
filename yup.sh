@@ -196,21 +196,21 @@ if $RefreshKeys; then
 	[[ $(yaourt  -Ssq antergos-keyring) ]] && { Flavours=${Flavours}" antergos"; KeyRings=${KeyRings}" antergos-keyring"; }
 	[[ $(yaourt  -Ssq manjaro-keyring) ]] && { Flavours=${Flavours}" manjaro"; KeyRings=${KeyRings}" manjaro-keyring"; }
 
+	msg "~> Clear out any downloaded software packages..." 3
+	sudo pacman --color always -Scc --noconfirm
 	msg "~> Removing & reinitiating the local keys..." 3
 	rm -rfv ${HOME}/.gnupg
 	gpg --list-keys
 	msg "~> Loading trusted certificates..." 3
 	touch ${HOME}/.gnupg/dirmngr_ldapservers.conf
 	sudo dirmngr --debug-level guru < /dev/null
+	msg "~> Reinstaling needing packages..." 3
+	sudo pacman -Sy --force --noconfirm --quiet gnupg ${KeyRings}
 	msg "~> Removing existing trusted keys..." 3
 	sudo rm -rfv /var/lib/pacman/sync
 	sudo rm -rfv /etc/pacman.d/gnupg
 	msg "~> Reinitiating pacman trusted keys..." 3
 	sudo pacman-key --init
-	msg "~> Clear out any downloaded software packages..." 3
-	sudo pacman --color always -Scc --noconfirm
-	msg "~> Reinstaling needing packages..." 3
-	sudo pacman -Sy --force --noconfirm --quiet gnupg ${KeyRings}
 	msg "~> The initial setup of keys..." 3
 	sudo pacman-key --populate ${Flavours}
 	msg "~> Refreshing pacman trusted keys..." 3

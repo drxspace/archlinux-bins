@@ -202,8 +202,8 @@ if $RefreshKeys; then
 	rm -rfv ${HOME}/.gnupg
 	gpg --list-keys
 	msg "~> Loading trusted certificates..." 3
-	sudo touch ${HOME}/.gnupg/dirmngr_ldapservers.conf
-	sudo dirmngr < /dev/null
+	touch ${HOME}/.gnupg/dirmngr_ldapservers.conf
+	sudo dirmngr --debug-level guru < /dev/null
 	msg "~> Removing existing trusted keys..." 3
 	sudo rm -rfv /var/lib/pacman/sync
 	sudo rm -rfv /etc/pacman.d/gnupg

@@ -196,8 +196,6 @@ if $RefreshKeys; then
 	[[ $(yaourt  -Ssq antergos-keyring) ]] && { Flavours=${Flavours}" antergos"; KeyRings=${KeyRings}" antergos-keyring"; }
 	[[ $(yaourt  -Ssq manjaro-keyring) ]] && { Flavours=${Flavours}" manjaro"; KeyRings=${KeyRings}" manjaro-keyring"; }
 
-	msg "~> Clear out the downloaded software packages..." 3
-	sudo pacman --color always -Scc --noconfirm
 	msg "~> Removing & reinitiating the local keys..." 3
 	rm -rfv ${HOME}/.gnupg
 	gpg --list-keys
@@ -209,13 +207,16 @@ if $RefreshKeys; then
 	sudo rm -rfv /etc/pacman.d/gnupg
 	msg "~> Reinitiating pacman trusted keys..." 3
 	sudo pacman-key --init
-	sudo pacman-key --populate ${Flavours}
+	msg "~> Clear out any downloaded software packages..." 3
+	sudo pacman --color always -Scc --noconfirm
 	msg "~> Reinstaling needing packages..." 3
 	sudo pacman -Sy --force --noconfirm --quiet gnupg ${KeyRings}
+	msg "~> The initial setup of keys..." 3
+	sudo pacman-key --populate ${Flavours}
 	msg "~> Refreshing pacman trusted keys..." 3
 	sudo pacman-key --refresh-keys
-	msg "~> Listing pacman's keyring..." 3
-	sudo gpg --homedir /etc/pacman.d/gnupg --list-keys
+	#msg "~> Listing pacman's keyring..." 3
+	#sudo gpg --homedir /etc/pacman.d/gnupg --list-keys
 	# Write any data buffered in memory out to disk
 	sudo sync
 fi

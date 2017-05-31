@@ -37,7 +37,7 @@ msg() {
 			;;
 	esac
 
-	echo -e "${msgStartOptions}${1}${msgEndOptions}";
+	echo -e "${msgStartOptions}${1}${msgEndOptions}"
 }
 
 ShowHelp() {
@@ -53,7 +53,7 @@ ShowHelp() {
 	echo -e "  -p, --purge\t\tClean ALL files from cache, unused and sync repositories databases" >&2
 	echo -e "  -r, --refresh-keys\tRefresh pacman GnuPG keys" >&2
 	echo -e "  -u, --update\t\tUpgrades all packages that are out-of-date, package downgrades enabled" >&2
-	exit 10;
+	exit 10
 }
 
 # reflector --list-countries
@@ -80,19 +80,19 @@ WrongOption=""
 yupRC="${HOME}"/.config/yuprc
 
 initiateRC() {
-	echo "# ${ScriptName} - Package manager helper utility config settings" > "${yupRC}";
-	echo "#" >> "${yupRC}";
-	echo "#" >> "${yupRC}";
-	echo "ReflectorCountry=${ReflectorCountry}" >> "${yupRC}";
+	echo "# ${ScriptName} - Package manager helper utility config settings" > "${yupRC}"
+	echo "#" >> "${yupRC}"
+	echo "#" >> "${yupRC}"
+	echo "ReflectorCountry=${ReflectorCountry}" >> "${yupRC}"
 	return 1
 }
 
 if [ -f "${yupRC}" ]; then
-	source "${yupRC}";
+	source "${yupRC}"
 fi
 if [ -z "${ReflectorCountry}" ]; then
 	ReflectorCountry='DE' # DE (Denmark) is the default country code
-	initiateRC;
+	initiateRC
 fi
 
 
@@ -101,12 +101,12 @@ while [[ "$1" == -* ]]; do
 		-c | --country)
 			shift
 			isCountry "${1^^}" && {
-				ReflectorCountry=${1^^};
+				ReflectorCountry=${1^^}
 				sed -i "/ReflectorCountry/s/=.*/=$(echo ${ReflectorCountry})/" "${yupRC}"
-				Mirrors=true;
+				Mirrors=true
 			} || {
 				msg "Invalid country code. Try “${ScriptName} -h” for more information" 1
-				exit 20;
+				exit 20
 			}
 			;;
 
@@ -143,13 +143,13 @@ done
 
 # Check options for error
 if [[ "${WrongOption}" != "" ]] || [[ -n "$1" ]]; then
-	msg "Invalid option "${WrongOption}". Try “${ScriptName} -h” for more information" 1;
-	exit 30;
+	msg "Invalid option "${WrongOption}". Try “${ScriptName} -h” for more information" 1
+	exit 30
 fi
 
 if ! hash yaourt &>/dev/null; then
-	msg "\e[1myaourt\e[0m: command not found! See https://archlinux.fr/yaourt-en on how to install it" 1;
-	exit 40;
+	msg "\e[1myaourt\e[0m: command not found! See https://archlinux.fr/yaourt-en on how to install it" 1
+	exit 40
 fi
 
 # Grant root privileges
@@ -160,7 +160,7 @@ if $Mirrors; then
 		echo -e ":: \033[1mRetrieving and Filtering a list of the latest Manjaro-Arch Linux mirrors...\033[0m"
 		sudo pacman-mirrors -c Germany -m  rank
 	elif ! hash reflector &>/dev/null; then
-		msg "\e[1mreflector\e[0m: command not found! Use \e[1msudo pacman -S reflector\e[0m to install it" 2;
+		msg "\e[1mreflector\e[0m: command not found! Use \e[1msudo pacman -S reflector\e[0m to install it" 2
 	else
 		# Grant root privileges
 		sudo -v || exit 2
@@ -196,15 +196,16 @@ if $RefreshKeys; then
 	[[ $(yaourt  -Ssq antergos-keyring) ]] && { Flavours=${Flavours}" antergos"; KeyRings=${KeyRings}" antergos-keyring"; }
 	[[ $(yaourt  -Ssq manjaro-keyring) ]] && { Flavours=${Flavours}" manjaro"; KeyRings=${KeyRings}" manjaro-keyring"; }
 
-	msg "~> Clear out any downloaded software packages..." 3
-	sudo pacman --color always -Scc --noconfirm
-	msg "~> Removing & reinitiating the local keys..." 3
+	msg "~> Clear out any already downloaded software packages..." 3
+	sudo pacman --color always -Sc --noconfirm
+	msg "~> Reinitiating current user's keys..." 3
 	rm -rfv ${HOME}/.gnupg
 	gpg --list-keys
-	msg "~> Loading trusted certificates..." 3
+	msg "~> Managing and downloading certificate revocation lists..." 3
 	touch ${HOME}/.gnupg/dirmngr_ldapservers.conf
 	sudo dirmngr --debug-level guru < /dev/null
 	msg "~> Reinstaling needing packages..." 3
+	# Public keyring not found; have you run 'pacman-key --init'?
 	sudo pacman -Sy --force --noconfirm --quiet gnupg ${KeyRings}
 	msg "~> Removing existing trusted keys..." 3
 	sudo rm -rfv /var/lib/pacman/sync
@@ -215,6 +216,8 @@ if $RefreshKeys; then
 	sudo pacman-key --populate ${Flavours}
 	msg "~> Refreshing pacman trusted keys..." 3
 	sudo pacman-key --refresh-keys
+	msg "~> Refreshing databases..." 3
+	yaourt --color -Syy --aur --devel # Standard Action
 	#msg "~> Listing pacman's keyring..." 3
 	#sudo gpg --homedir /etc/pacman.d/gnupg --list-keys
 	# Write any data buffered in memory out to disk
@@ -244,7 +247,7 @@ if $Optimize; then
 
 	echo -e "\n:: \033[1mCleaning, Upgrading and Optimizing pacman databases...\033[0m"
 
-	sudo pacman --color always -Scc --noconfirm
+	sudo pacman --color always -Sc --noconfirm
 	sudo pacman-db-upgrade
 	sudo pacman-optimize
 	# Write any data buffered in memory out to disk
@@ -260,8 +263,8 @@ if $Purge; then
 	if [[ -d /var/lib/pacman/sync ]]; then
 		# Cleaning an Arch Linux installation
 		# https://andreascarpino.it/posts/cleaning-an-arch-linux-installation.html
-		if [[ -n $(pacman --color always -Qqdtt) ]]; then
-			sudo pacman --color always -Rs $(pacman -Qqdtt);
+		if [[ -n $(pacman -Qqdtt) ]]; then
+			sudo pacman --color always -Rs $(pacman -Qqdtt)
 		fi
 
 		# -c, --clean
@@ -278,6 +281,12 @@ if $Purge; then
 			echo "removing all sync repositories..."
 			sudo rm -rfv /var/lib/pacman/sync
 			msg "Repositories databases don't exist anymore. You may have to REFRESH them." 2
+			echo -en ":: \033[1mDo it now? [Y/n] \033[0m"
+			read ANS
+			[[ ${ANS:-Y} == [Yy] ]] && {
+				msg "~> Refreshing databases..." 3
+				yaourt --color -Syy --aur --devel # Standard Action
+			}
 		}
 	fi
 fi

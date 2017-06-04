@@ -18,6 +18,7 @@
 }
 
 [[ "$1" = "-g" ]] || [[ "$1" = "" ]] || [[ "$1" = "-a" ]] && {
+	os-prober;
 	exec grub-mkconfig -o /boot/grub/grub.cfg;
 }
 

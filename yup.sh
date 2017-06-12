@@ -10,6 +10,7 @@
 #set -e set -x
 #set -x set -e
 
+ScriptVersion="0.9.0"
 ScriptName="$(basename $0)"
 
 msg() {
@@ -42,7 +43,7 @@ msg() {
 
 ShowHelp() {
 	echo -e "\e[1;38;5;209m${ScriptName}\e[0m - Package manager helper utility (depends on \e[1myaourt\e[0m -- https://archlinux.fr/yaourt-en and \e[1mreflector\e[0m -- https://wiki.archlinux.org/index.php/Reflector)" >&2
-	echo -e "\nUsage: ${0##*/} [-c | --country] [-h | --help] [-m | --mirrors] [-o | --optimize] [-p | --purge] [-r | --refresh-keys] [-u | --update]" >&2
+	echo -e "\nUsage: ${0##*/} [-c | --country] [-h | --help] [-m | --mirrors] [-o | --optimize] [-p | --purge] [-r | --refresh-keys] [-u | --update] [-v | --version]" >&2
 	echo -e "\nOptions:" >&2
 	echo -e "  -c, --country CODE\tTwo letters country code from where to generate the mirrorlist" >&2
 	echo -e "\t\t\tUse the command \e[1mreflector --list-countries\e[0m to list them" >&2
@@ -53,13 +54,14 @@ ShowHelp() {
 	echo -e "  -p, --purge\t\tClean ALL files from cache, unused and sync repositories databases" >&2
 	echo -e "  -r, --refresh-keys\tRefresh pacman GnuPG keys" >&2
 	echo -e "  -u, --update\t\tUpgrades all packages that are out-of-date, package downgrades enabled" >&2
+	echo -e "  -v, --version\t\tDisplay \e[1m${ScriptName}\e[0m utility version" >&2
 	exit 10
 }
 
-# reflector --list-countries
-_CountryCodes=("AU" "AT" "BY" "BE" "BA" "BR" "BG" "CA" "CL" "CN" "CO" "HR" "CZ" "DK" "EC" "FI" "FR" "DE" "GR" "HK" "HU" "IS" "ID" "IE" "IL" "IT" "JP" "KZ" "LV" "LT" "LU" "MK" "NL" "NC" "NO" "PH" "PL" "PT" "QA" "RO" "RU" "SG" "SK" "SI" "ZA" "KR" "ES" "SE" "CH" "TW" "TH" "TR" "UA" "GB" "US" "VN")
 
 isCountry() {
+	# reflector --list-countries
+	local _CountryCodes=("AU" "AT" "BY" "BE" "BA" "BR" "BG" "CA" "CL" "CN" "CO" "HR" "CZ" "DK" "EC" "FI" "FR" "DE" "GR" "HK" "HU" "IS" "ID" "IE" "IL" "IT" "JP" "KZ" "LV" "LT" "LU" "MK" "NL" "NC" "NO" "PH" "PL" "PT" "QA" "RO" "RU" "SG" "SK" "SI" "ZA" "KR" "ES" "SE" "CH" "TW" "TH" "TR" "UA" "GB" "US" "VN")
 	local cc
 	for cc in "${_CountryCodes[@]}"; do [[ "$cc" == $1 ]] && return 0; done
 	return 1
@@ -80,7 +82,7 @@ WrongOption=""
 yupRC="${HOME}"/.config/yuprc
 
 initiateRC() {
-	echo "# ${ScriptName} - Package manager helper utility config settings" > "${yupRC}"
+	echo "# ${ScriptName} - Package manager helper utility" > "${yupRC}"
 	echo "#" >> "${yupRC}"
 	echo "#" >> "${yupRC}"
 	echo "ReflectorCountry=${ReflectorCountry}" >> "${yupRC}"
@@ -134,6 +136,11 @@ while [[ "$1" == -* ]]; do
 			Update=true
 			;;
 
+		-v | --version)
+			msg "${ScriptVersion}" 3
+			exit 30
+			;;
+
 		 *)
 			WrongOption=$1
 			;;
@@ -144,12 +151,12 @@ done
 # Check options for error
 if [[ "${WrongOption}" != "" ]] || [[ -n "$1" ]]; then
 	msg "Invalid option "${WrongOption}". Try “${ScriptName} -h” for more information" 1
-	exit 30
+	exit 40
 fi
 
 if ! hash yaourt &>/dev/null; then
 	msg "\e[1myaourt\e[0m: command not found! See https://archlinux.fr/yaourt-en on how to install it" 1
-	exit 40
+	exit 50
 fi
 
 # Grant root privileges
@@ -206,7 +213,9 @@ if $RefreshKeys; then
 	sudo dirmngr --debug-level guru < /dev/null
 	msg "~> Reinstaling needing packages..." 3
 	# Public keyring not found; have you run 'pacman-key --init'?
-	sudo pacman -Sy --force --noconfirm --quiet gnupg ${KeyRings}
+	# LocalFileSigLevel = Optional
+	sudo pacman -Syw --force --noconfirm --quiet gnupg ${KeyRings}
+	sudo pacman -U --force --noconfirm --quiet gnupg ${KeyRings}
 	msg "~> Removing existing trusted keys..." 3
 	sudo rm -rfv /var/lib/pacman/sync
 	sudo rm -rfv /etc/pacman.d/gnupg

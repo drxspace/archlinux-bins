@@ -215,7 +215,7 @@ if $RefreshKeys; then
 	# Public keyring not found; have you run 'pacman-key --init'?
 	# LocalFileSigLevel = Optional
 	sudo pacman -Syw --force --noconfirm --quiet gnupg ${KeyRings}
-	sudo pacman -U --force --noconfirm --quiet gnupg ${KeyRings}
+	sudo pacman -U --force --noconfirm gnupg ${KeyRings}
 	msg "~> Removing existing trusted keys..." 3
 	sudo rm -rfv /var/lib/pacman/sync
 	sudo rm -rfv /etc/pacman.d/gnupg

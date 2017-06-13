@@ -198,13 +198,13 @@ if $RefreshKeys; then
 	echo -e ":: \033[1mRefreshing pacman GnuPG keys...\033[0m"
 
 	Flavours="archlinux"
-	KeyRings="archlinux-keyring"
-	[[ $(yaourt  -Ssq apricity-keyring) ]] && { Flavours=${Flavours}" apricity"; KeyRings=${KeyRings}" apricity-keyring"; }
-	[[ $(yaourt  -Ssq antergos-keyring) ]] && { Flavours=${Flavours}" antergos"; KeyRings=${KeyRings}" antergos-keyring"; }
-	[[ $(yaourt  -Ssq manjaro-keyring) ]] && { Flavours=${Flavours}" manjaro"; KeyRings=${KeyRings}" manjaro-keyring"; }
+	NeededPkgs=("gnupg" "archlinux-keyring") 
+	[[ $(yaourt  -Ssq apricity-keyring) ]] && { Flavours=${Flavours}" apricity"; NeededPkgs+=("apricity-keyring"); }
+	[[ $(yaourt  -Ssq antergos-keyring) ]] && { Flavours=${Flavours}" antergos"; NeededPkgs+=("antergos-keyring"); }
+	[[ $(yaourt  -Ssq manjaro-keyring) ]] && { Flavours=${Flavours}" manjaro"; NeededPkgs+=("manjaro-keyring"); }
 
 	msg "~> Clear out any already downloaded software packages..." 3
-	sudo pacman --color always -Sc --noconfirm
+	sudo pacman --color always -Sc --force --noconfirm
 	msg "~> Reinitiating current user's keys..." 3
 	rm -rfv ${HOME}/.gnupg
 	gpg --list-keys
@@ -212,10 +212,12 @@ if $RefreshKeys; then
 	touch ${HOME}/.gnupg/dirmngr_ldapservers.conf
 	sudo dirmngr --debug-level guru < /dev/null
 	msg "~> Reinstaling needing packages..." 3
-	# Public keyring not found; have you run 'pacman-key --init'?
+	###  Public keyring not found; have you run 'pacman-key --init'?
 	# LocalFileSigLevel = Optional
-	sudo pacman -Syw --force --noconfirm --quiet gnupg ${KeyRings}
-	sudo pacman -U --force --noconfirm gnupg ${KeyRings}
+	sudo pacman -Syw --noconfirm --quiet --force ${NeededPkgs}
+	for iPkg in "${!NeededPkgs[@]}"; do
+		sudo pacman -U --force --noconfirm /var/cache/pacman/pkg/"${NeededPkgs[${iPkg}]}"*
+	done
 	msg "~> Removing existing trusted keys..." 3
 	sudo rm -rfv /var/lib/pacman/sync
 	sudo rm -rfv /etc/pacman.d/gnupg
@@ -227,8 +229,8 @@ if $RefreshKeys; then
 	sudo pacman-key --refresh-keys
 	msg "~> Refreshing databases..." 3
 	yaourt --color -Syy --aur --devel # Standard Action
-	#msg "~> Listing pacman's keyring..." 3
-	#sudo gpg --homedir /etc/pacman.d/gnupg --list-keys
+	###msg "~> Listing pacman's keyring..." 3
+	###sudo gpg --homedir /etc/pacman.d/gnupg --list-keys
 	# Write any data buffered in memory out to disk
 	sudo sync
 fi

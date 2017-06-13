@@ -198,7 +198,7 @@ if $RefreshKeys; then
 	echo -e ":: \033[1mRefreshing pacman GnuPG keys...\033[0m"
 
 	Flavours="archlinux"
-	NeededPkgs=("gnupg" "archlinux-keyring") 
+	declare -a NeededPkgs=("gnupg" "archlinux-keyring") 
 	[[ $(yaourt  -Ssq apricity-keyring) ]] && { Flavours=${Flavours}" apricity"; NeededPkgs+=("apricity-keyring"); }
 	[[ $(yaourt  -Ssq antergos-keyring) ]] && { Flavours=${Flavours}" antergos"; NeededPkgs+=("antergos-keyring"); }
 	[[ $(yaourt  -Ssq manjaro-keyring) ]] && { Flavours=${Flavours}" manjaro"; NeededPkgs+=("manjaro-keyring"); }
@@ -214,7 +214,7 @@ if $RefreshKeys; then
 	msg "~> Reinstaling needing packages..." 3
 	###  Public keyring not found; have you run 'pacman-key --init'?
 	# LocalFileSigLevel = Optional
-	sudo pacman -Syw --noconfirm --quiet --force ${NeededPkgs}
+	sudo pacman -Syw --noconfirm --quiet --force ${NeededPkgs[@]}
 	for iPkg in "${!NeededPkgs[@]}"; do
 		sudo pacman -U --force --noconfirm /var/cache/pacman/pkg/"${NeededPkgs[${iPkg}]}"*
 	done

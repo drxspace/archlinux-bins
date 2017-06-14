@@ -33,6 +33,10 @@ msg() {
 		4)	# Success
 			msgStartOptions="\e[1;92m${ScriptName}\e[0m: \e[32m"
 			;;
+		10)	# Header
+			msgStartOptions="\n:: \e[1m"
+			msgEndOptions="\e[0m\n"
+			;;
 		*)	# Fallback to Generic message
 			msgStartOptions="\e[1;33m${ScriptName}\e[0m: \e[94m"
 			;;
@@ -164,14 +168,14 @@ sudo -v || exit 1
 
 if $Mirrors; then
 	if hash pacman-mirrors &>/dev/null; then
-		echo -e ":: \033[1mRetrieving and Filtering a list of the latest Manjaro-Arch Linux mirrors...\033[0m"
+		msg "Retrieving and Filtering a list of the latest Manjaro-Arch Linux mirrors..." 10
 		sudo pacman-mirrors -c Germany -m  rank
 	elif ! hash reflector &>/dev/null; then
 		msg "\e[1mreflector\e[0m: command not found! Use \e[1msudo pacman -S reflector\e[0m to install it" 2
 	else
 		# Grant root privileges
 		sudo -v || exit 2
-		echo -e ":: \033[1mRetrieving and Filtering a list of the latest Arch Linux mirrors...\033[0m"
+		msg "Retrieving and Filtering a list of the latest Arch Linux mirrors..." 10
 		sudo $(which reflector) --country ${ReflectorCountry} --latest ${nReflectorMirrors} --age ${nReflectorMirrorsAge} --fastest ${nReflectorMirrors} --threads ${nReflectorThreads} --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
 		echo -e "\n\e[0;94m\e[40m"
 		cat /etc/pacman.d/mirrorlist
@@ -195,7 +199,7 @@ if $RefreshKeys; then
 	# Grant root privileges
 	sudo -v || exit 3
 
-	echo -e ":: \033[1mRefreshing pacman GnuPG keys...\033[0m"
+	msg "Refreshing pacman GnuPG keys..." 10
 
 	Flavours="archlinux"
 	declare -a NeededPkgs=("gnupg" "archlinux-keyring") 
@@ -239,7 +243,7 @@ if $Update && [ $(yaourt -Qu --aur | wc -l) -gt 0 ]; then
 	# Grant root privileges
 	sudo -v || exit 4
 
-	echo -e "\n:: \033[1mUpdating packages...\033[0m"
+	msg "Updating packages..." 10
 
 #	 -u, --sysupgrade
 #		Pass this option twice to enable package downgrades; in this case, pacman will select sync packages
@@ -256,7 +260,7 @@ if $Optimize; then
 	# Grant root privileges
 	sudo -v || exit 5
 
-	echo -e "\n:: \033[1mCleaning, Upgrading and Optimizing pacman databases...\033[0m"
+	msg "Cleaning, Upgrading and Optimizing pacman databases..." 10
 
 	sudo pacman --color always -Sc --noconfirm
 	sudo pacman-db-upgrade
@@ -269,7 +273,7 @@ if $Purge; then
 	# Grant root privileges
 	sudo -v || exit 6
 
-	echo -e "\n:: \033[1mCleaning ALL files from cache, unused and sync repositories databases...\033[0m"
+	msg "Cleaning ALL files from cache, unused and sync repositories databases..." 10
 
 	if [[ -d /var/lib/pacman/sync ]]; then
 		# Cleaning an Arch Linux installation
@@ -286,13 +290,13 @@ if $Purge; then
 		yaourt -Scc
 
 		echo -e "\nPacman sync repositories directory: /var/lib/pacman/sync"
-		echo -en ":: \033[1mDo you want to remove ALL the sync repositories databases? [y/N] \033[0m"
+		echo -en ":: \e[1mDo you want to remove ALL the sync repositories databases? [y/N] \e[0m"
 		read ANS
 		[[ ${ANS:-N} == [Yy] ]] && {
 			echo "removing all sync repositories..."
 			sudo rm -rfv /var/lib/pacman/sync
 			msg "Repositories databases don't exist anymore. You may have to REFRESH them." 2
-			echo -en ":: \033[1mDo it now? [Y/n] \033[0m"
+			echo -en ":: \e[1mDo it now? [Y/n] \e[0m"
 			read ANS
 			[[ ${ANS:-Y} == [Yy] ]] && {
 				msg "~> Refreshing databases..." 3

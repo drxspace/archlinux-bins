@@ -10,7 +10,7 @@
 #set -e set -x
 #set -x set -e
 
-ScriptVersion="0.9.0"
+ScriptVersion="0.9.3"
 ScriptName="$(basename $0)"
 
 msg() {
@@ -30,12 +30,25 @@ msg() {
 		3)	# Information
 			msgStartOptions="\e[1;94m${ScriptName}\e[0m: \e[94m"
 			;;
-		4)	# Success
+		4)	# Question
+			msgStartOptions="\e[1;38;5;57m${ScriptName}\e[0m: \e[36m"
+			;;
+		5)	# Success
 			msgStartOptions="\e[1;92m${ScriptName}\e[0m: \e[32m"
 			;;
 		10)	# Header
-			msgStartOptions="\n:: \e[1m"
+			msgStartOptions="\n\e[1;34m:: \e[1;39m"
 			msgEndOptions="\e[0m\n"
+			;;
+		11)	# Header
+			msgStartOptions="\n\e[1;34m:: \e[1;39m"
+			;;
+		12)	# Header
+			msgStartOptions="\e[1;34m:: \e[1;39m"
+			msgEndOptions="\e[0m\n"
+			;;
+		13)	# Header
+			msgStartOptions="\e[1;34m:: \e[1;39m"
 			;;
 		*)	# Fallback to Generic message
 			msgStartOptions="\e[1;33m${ScriptName}\e[0m: \e[94m"
@@ -175,7 +188,7 @@ if $Mirrors; then
 	else
 		# Grant root privileges
 		sudo -v || exit 2
-		msg "Retrieving and Filtering a list of the latest Arch Linux mirrors..." 10
+		msg "Retrieving and Filtering a list of the latest Arch Linux mirrors..." 13
 		sudo $(which reflector) --country ${ReflectorCountry} --latest ${nReflectorMirrors} --age ${nReflectorMirrorsAge} --fastest ${nReflectorMirrors} --threads ${nReflectorThreads} --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
 		echo -e "\n\e[0;94m\e[40m"
 		cat /etc/pacman.d/mirrorlist
@@ -199,7 +212,7 @@ if $RefreshKeys; then
 	# Grant root privileges
 	sudo -v || exit 3
 
-	msg "Refreshing pacman GnuPG keys..." 10
+	msg "Refreshing pacman GnuPG keys..." 11
 
 	Flavours="archlinux"
 	declare -a NeededPkgs=("gnupg" "archlinux-keyring") 
@@ -273,7 +286,7 @@ if $Purge; then
 	# Grant root privileges
 	sudo -v || exit 6
 
-	msg "Cleaning ALL files from cache, unused and sync repositories databases..." 10
+	msg "Cleaning ALL files from cache, unused and sync repositories databases..." 11
 
 	if [[ -d /var/lib/pacman/sync ]]; then
 		# Cleaning an Arch Linux installation
@@ -290,16 +303,16 @@ if $Purge; then
 		yaourt -Scc
 
 		echo -e "\nPacman sync repositories directory: /var/lib/pacman/sync"
-		echo -en ":: \e[1mDo you want to remove ALL the sync repositories databases? [y/N] \e[0m"
+		echo -en "\e[1;34m:: \e[1;39mDo you want to remove ALL the sync repositories databases? [y/N] \e[0m"
 		read ANS
 		[[ ${ANS:-N} == [Yy] ]] && {
 			echo "removing all sync repositories..."
 			sudo rm -rfv /var/lib/pacman/sync
 			msg "Repositories databases don't exist anymore. You may have to REFRESH them." 2
-			echo -en ":: \e[1mDo it now? [Y/n] \e[0m"
+			echo -en "\e[1;34m:: \e[1;39mDo it now? [Y/n] \e[0m"
 			read ANS
 			[[ ${ANS:-Y} == [Yy] ]] && {
-				msg "~> Refreshing databases..." 3
+				echo
 				yaourt --color -Syy --aur --devel # Standard Action
 			}
 		}

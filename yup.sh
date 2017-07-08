@@ -230,14 +230,14 @@ if $RefreshKeys; then
 	[[ $(yaourt  -Ssq antergos-keyring) ]] && { Flavours=${Flavours}" antergos"; NeededPkgs+=("antergos-keyring"); }
 	[[ $(yaourt  -Ssq manjaro-keyring) ]] && { Flavours=${Flavours}" manjaro"; NeededPkgs+=("manjaro-keyring"); }
 
-	msg "~> Clear out any already downloaded software packages..." 3
-	sudo pacman --color always -Sc --force --noconfirm
-	msg "~> Reinitiating current user's keys..." 3
+	msg "~> Reinitiating current user's PGP keys..." 3
 	rm -rfv ${HOME}/.gnupg
 	gpg --list-keys
 	msg "~> Managing and downloading certificate revocation lists..." 3
 	touch ${HOME}/.gnupg/dirmngr_ldapservers.conf
 	sudo dirmngr --debug-level guru < /dev/null
+	msg "~> Clear out any already downloaded software packages..." 3
+	sudo pacman --color always -Sc --force --noconfirm
 	msg "~> Reinstaling needing packages..." 3
 	###  Public keyring not found; have you run 'pacman-key --init'?
 	# LocalFileSigLevel = Optional

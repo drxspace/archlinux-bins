@@ -191,33 +191,6 @@ fi
 # Grant root privileges
 sudo -v || exit 1
 
-if $Mirrors; then
-	if hash pacman-mirrors &>/dev/null; then
-		msg "Retrieving and Filtering a list of the latest Manjaro-Arch Linux mirrors..." 10
-		sudo pacman-mirrors -c Germany -m  rank
-	elif ! hash reflector &>/dev/null; then
-		msg "\e[1mreflector\e[0m: command not found! Use \e[1msudo pacman -S reflector\e[0m to install it" 2
-	else
-		# Grant root privileges
-		sudo -v || exit 2
-		msg "Retrieving and Filtering a list of the latest Arch Linux mirrors..." 13
-		sudo $(which reflector) --country ${ReflectorCountry} --latest ${nReflectorMirrors} --age ${nReflectorMirrorsAge} --fastest ${nReflectorMirrors} --threads ${nReflectorThreads} --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
-		echo -e "\n\e[0;94m\e[40m"
-		cat /etc/pacman.d/mirrorlist
-		echo -e "\e[0;100m\e[0;91m"
-		sudo rm -fv /etc/pacman.d/mirrorlist.*
-		echo -e "\e[0m"
-		# Write any data buffered in memory out to disk
-		sudo sync
-	fi
-fi
-
-### Standard Action
-#
-refreshPKGDBs
-#
-### Standard Action
-
 if $RefreshKeys; then
 	# Grant root privileges
 	sudo -v || exit 3
@@ -259,6 +232,33 @@ if $RefreshKeys; then
 	# Write any data buffered in memory out to disk
 	sudo sync
 fi
+
+if $Mirrors; then
+	if hash pacman-mirrors &>/dev/null; then
+		msg "Retrieving and Filtering a list of the latest Manjaro-Arch Linux mirrors..." 10
+		sudo pacman-mirrors -c Germany -m  rank
+	elif ! hash reflector &>/dev/null; then
+		msg "\e[1mreflector\e[0m: command not found! Use \e[1msudo pacman -S reflector\e[0m to install it" 2
+	else
+		# Grant root privileges
+		sudo -v || exit 2
+		msg "Retrieving and Filtering a list of the latest Arch Linux mirrors..." 13
+		sudo $(which reflector) --country ${ReflectorCountry} --latest ${nReflectorMirrors} --age ${nReflectorMirrorsAge} --fastest ${nReflectorMirrors} --threads ${nReflectorThreads} --protocol http --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+		echo -e "\n\e[0;94m\e[40m"
+		cat /etc/pacman.d/mirrorlist
+		echo -e "\e[0;100m\e[0;91m"
+		sudo rm -fv /etc/pacman.d/mirrorlist.*
+		echo -e "\e[0m"
+		# Write any data buffered in memory out to disk
+		sudo sync
+	fi
+fi
+
+### Standard Action
+#
+refreshPKGDBs
+#
+### Standard Action
 
 if $Update && [ $(yaourt -Qu --aur | wc -l) -gt 0 ]; then
 	# Grant root privileges

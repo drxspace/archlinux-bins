@@ -114,6 +114,18 @@ if [ -z "${ReflectorCountry}" ]; then
 	initiateRC
 fi
 
+refreshPKGDBs() {
+	# -y, --refresh
+	#	Passing two --refresh or -y flags will
+	#	force a refresh of all package databases, even if they appear to be up-to-date.
+	# -a, --aur
+	#	Also search in AUR database.
+	yaourt --color -Syy --aur --devel
+	# Write any data buffered in memory out to disk
+	sudo sync
+	return 1
+}
+
 
 while [[ "$1" == -* ]]; do
 	case "$1" in
@@ -201,12 +213,10 @@ if $Mirrors; then
 fi
 
 ### Standard Action
-# -y, --refresh
-#	Passing two --refresh or -y flags will
-#	force a refresh of all package databases, even if they appear to be up-to-date.
-# -a, --aur
-#	Also search in AUR database.
-yaourt --color -Syy --aur --devel # Standard Action
+#
+refreshPKGDBs
+#
+### Standard Action
 
 if $RefreshKeys; then
 	# Grant root privileges
@@ -245,9 +255,7 @@ if $RefreshKeys; then
 	msg "~> Refreshing pacman trusted keys..." 3
 	sudo pacman-key --refresh-keys
 	msg "~> Refreshing databases..." 3
-	yaourt --color -Syy --aur --devel # Standard Action
-	###msg "~> Listing pacman's keyring..." 3
-	###sudo gpg --homedir /etc/pacman.d/gnupg --list-keys
+	refreshPKGDBs
 	# Write any data buffered in memory out to disk
 	sudo sync
 fi
@@ -264,7 +272,7 @@ if $Update && [ $(yaourt -Qu --aur | wc -l) -gt 0 ]; then
 #		testing repository to a stable one.
 #	-a, --aur
 #		With -u or --sysupgrade, upgrade aur packages that are out of date.
-	yaourt --color -Suu --aur
+	yaourt --color -Suu --aur 
 	# Write any data buffered in memory out to disk
 	sudo sync
 fi
@@ -316,6 +324,8 @@ if $Purge; then
 				yaourt --color -Syy --aur --devel # Standard Action
 			}
 		}
+		# Write any data buffered in memory out to disk
+		sudo sync
 	fi
 fi
 

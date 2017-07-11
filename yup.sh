@@ -228,7 +228,7 @@ if $RefreshKeys; then
 	msg "~> Refreshing pacman trusted keys..." 3
 	sudo pacman-key --refresh-keys
 	msg "~> Refreshing databases..." 3
-	refreshPKGDBs
+	#refreshPKGDBs
 	# Write any data buffered in memory out to disk
 	sudo sync
 fi
@@ -281,11 +281,14 @@ if $Optimize; then
 	# Grant root privileges
 	sudo -v || exit 5
 
-	msg "Cleaning, Upgrading and Optimizing pacman databases..." 10
+	msg "Upgrading and Optimizing pacman databases..." 10
 
-	sudo pacman --color always -Sc --noconfirm
 	sudo pacman-db-upgrade
 	sudo pacman-optimize
+
+	msg "Update the stored metadata files..." 10
+	sudo pkgfile --update
+
 	# Write any data buffered in memory out to disk
 	sudo sync
 fi

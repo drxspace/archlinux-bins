@@ -281,13 +281,13 @@ if $Optimize; then
 	# Grant root privileges
 	sudo -v || exit 5
 
+	msg "Update the stored metadata files..." 10
+	sudo pkgfile --update
+
 	msg "Upgrading and Optimizing pacman databases..." 10
 
 	sudo pacman-db-upgrade
 	sudo pacman-optimize
-
-	msg "Update the stored metadata files..." 10
-	sudo pkgfile --update
 
 	# Write any data buffered in memory out to disk
 	sudo sync

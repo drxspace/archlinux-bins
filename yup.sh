@@ -11,51 +11,10 @@
 #set -x set -e
 
 ScriptVersion="0.9.3"
-ScriptName="$(basename $0)"
 
-msg() {
-	local msgStartOptions=""
-	local msgEndOptions="\e[0m"
-
-	case $2 in
-		0|"")	# Generic message
-			msgStartOptions="\e[1;33m${ScriptName}\e[0m: \e[94m"
-			;;
-		1)	# Error message
-			msgStartOptions="\e[1;31m${ScriptName}\e[0m: \e[91m"
-			;;
-		2)	# Warning
-			msgStartOptions="\e[1;38;5;209m${ScriptName}\e[0m: \e[93m"
-			;;
-		3)	# Information
-			msgStartOptions="\e[1;94m${ScriptName}\e[0m: \e[94m"
-			;;
-		4)	# Question
-			msgStartOptions="\e[1;38;5;57m${ScriptName}\e[0m: \e[36m"
-			;;
-		5)	# Success
-			msgStartOptions="\e[1;92m${ScriptName}\e[0m: \e[32m"
-			;;
-		10)	# Header
-			msgStartOptions="\n\e[1;34m:: \e[1;39m"
-			msgEndOptions="\e[0m\n"
-			;;
-		11)	# Header
-			msgStartOptions="\n\e[1;34m:: \e[1;39m"
-			;;
-		12)	# Header
-			msgStartOptions="\e[1;34m:: \e[1;39m"
-			msgEndOptions="\e[0m\n"
-			;;
-		13)	# Header
-			msgStartOptions="\e[1;34m:: \e[1;39m"
-			;;
-		*)	# Fallback to Generic message
-			msgStartOptions="\e[1;33m${ScriptName}\e[0m: \e[94m"
-			;;
-	esac
-
-	echo -e "${msgStartOptions}${1}${msgEndOptions}"
+source "$(dirname "$0")"/libfuncs &>/dev/null || {
+	echo "Missing file: libfuncs";
+	exit 1;
 }
 
 ShowHelp() {
@@ -281,7 +240,7 @@ if $Optimize; then
 	# Grant root privileges
 	sudo -v || exit 5
 
-	msg "Update the stored metadata files..." 10
+	msg "Updating the stored metadata files..." 10
 	sudo pkgfile --update
 
 	msg "Upgrading and Optimizing pacman databases..." 10

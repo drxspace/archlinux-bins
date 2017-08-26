@@ -27,7 +27,7 @@ source "$(dirname "$0")"/libfuncs &>/dev/null || {
 	msg "Probing disks on the system for other operating systems" 12;
 	os-prober;
 	msg "Generating a GRUB configuration file" 10;
-	exec "grub-mkconfig -o /boot/grub/grub.cfg";
+	exec grub-mkconfig -o /boot/grub/grub.cfg;
 }
 
 exit $?

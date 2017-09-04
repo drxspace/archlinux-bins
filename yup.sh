@@ -282,8 +282,7 @@ if $Purge; then
 			echo -en "\e[1;34m:: \e[1;39mDo it now? [Y/n] \e[0m"
 			read ANS
 			[[ ${ANS:-Y} == [Yy] ]] && {
-				echo
-				yaourt --color -Syy --aur --devel # Standard Action
+				refreshPKGDBs # Standard Action
 			}
 		}
 		# Write any data buffered in memory out to disk
